@@ -2,22 +2,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-data "template_file" "init_script" {
-  template = file("${path.module}/ec2-setup.tpl")
-    
-  vars = {
-    NETWORK_NAME="my-network"
-    BACKEND_CONTAINER="backend"
-    FRONTEND_CONTAINER="frontend"
-    BACKEND_IMAGE="jek2141/scraper_backend"
-    FRONTEND_IMAGE="jek2141/scraper_frontend"
-    DB_USERNAME="postgres"
-    DB_PASSWORD="password"
-    DB_NAME="postgres"
-    DB_HOST=aws_db_instance.postgres_db.endpoint
-  }
-}
-
 resource "aws_instance" "backend_server" {
   ami           = "ami-07d9b9ddc6cd8dd30"
   instance_type = "t2.micro"
@@ -25,8 +9,6 @@ resource "aws_instance" "backend_server" {
   # 
   depends_on = [aws_db_instance.postgres_db]
   vpc_security_group_ids = [aws_security_group.web_app.id]
-  
-  user_data = data.template_file.init_script.rendered
   
   tags = {
       Name = "backend server"
